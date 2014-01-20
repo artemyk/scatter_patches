@@ -47,7 +47,7 @@ function hh = scatter_patches(varargin)
 %      hold on;
 %      hh2=scatter_patches(randn(N,1),2*randn(N,1),36, 'g','s','FaceAlpha',0.2,'EdgeColor','none');
 %      hold on;
-%      hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*randn(N,1),'b','<','FaceAlpha',0.2,'EdgeColor','r');
+%      hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*rand(N,1),'b','<','FaceAlpha',0.2,'EdgeColor','r');
 %      legend([hh1(1),hh2(1),hh3(1)], {'red circles','green squares','blue triangles'});
 %
 % Artemy Kolchinsky, Indiana University, 2014
@@ -79,9 +79,13 @@ if nargs > 2
     if numel(sizes) ~= 1 && numel(sizes) ~= numel(xs)
         error('Marker size parameter must be single entry or vector with same number of elements as points');
     end
+    if any(sizes < 0)
+        error('Sizes must be positive');
+    end
 else
     sizes = 36;
 end
+
 sizes = sqrt(sizes);
 
 colors = [];
