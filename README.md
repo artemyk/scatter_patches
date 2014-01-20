@@ -15,6 +15,6 @@ hh1=scatter_patches(randn(N,1),1*randn(N,1),36, 'r','FaceAlpha',0.4,'EdgeColor',
 hold on;
 hh2=scatter_patches(randn(N,1),2*randn(N,1),36, 'g','s','FaceAlpha',0.2,'EdgeColor','none');
 hold on;
-hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*randn(N,1),'b','<','FaceAlpha',0.2,'EdgeColor','r');
+hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*rand(N,1),'b','<','FaceAlpha',0.2,'EdgeColor','r');
 legend([hh1(1),hh2(1),hh3(1)], {'red circles','green squares','blue triangles'});
 ```
