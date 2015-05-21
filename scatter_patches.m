@@ -45,10 +45,10 @@ function hh = scatter_patches(varargin)
 %      N=100;
 %      hh1=scatter_patches(randn(N,1),1*randn(N,1),36, 'r','FaceAlpha',0.4,'EdgeColor','none');
 %      hold on;
-%      hh2=scatter_patches(randn(N,1),2*randn(N,1),36, 'g','s','FaceAlpha',0.2,'EdgeColor','none');
+%      hh2=scatter_patches(randn(N,1),2*randn(N,1),36, N*rand(N,1),'s','FaceAlpha',0.2,'EdgeColor','none');
 %      hold on;
-%      hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*rand(N,1),'b','<','FaceAlpha',0.2,'EdgeColor','r');
-%      legend([hh1(1),hh2(1),hh3(1)], {'red circles','green squares','blue triangles'});
+%      hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*rand(N,1), 1:N,'<','FaceAlpha',0.2,'EdgeColor','r');
+%      legend([hh1(1),hh2(1),hh3(1)], {'red circles','multicolor squares','multicolor triangles'});
 %
 % Artemy Kolchinsky, Indiana University, 2014
 
@@ -109,6 +109,10 @@ end
 if numel(colors) ~= 1 && numel(colors) ~= length(xs) && numel(colors) ~= 3 && numel(colors) ~= 3*length(xs)
     error('Colors  parameter must be single entry or vector with same number of elements as points, or RGB triplet or Nx3 matrix of RGB ');
 end
+if numel(colors) == length(xs) && size(colors,1) == 1,
+    colors = colors';
+end
+
 
 markerType = 'o';
 if ~isempty(pvpairs) && length(pvpairs{1})==1
