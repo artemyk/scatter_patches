@@ -53,11 +53,16 @@ function hh = scatter_patches(varargin)
 % Artemy Kolchinsky, Indiana University, 2014
 
 
-[cax, args] = axescheck(varargin{:});
-if isempty(cax) || ishghandle(cax,'axes')
-    cax = newplot(cax);
-else
-    cax = ancestor(cax,'Axes');
+args = varargin;
+
+if length(args) > 1
+    arg = args{1};
+    if isscalar(arg) && ishandle(arg) && strcmp(get(arg, 'type'), 'axes')
+        cax = ancestor(args{1},'Axes');
+        args(1)=[];
+    else
+        cax = newplot();
+    end
 end
 
 [args,pvpairs] = parseparams(args);
@@ -167,11 +172,7 @@ end
 hh=[];
 cUnits = get(cax,'Units');
 set(cax,'Units','points');
-pos = get(cax,'Position');
-xlims = get(cax,'XLim');
-ylims = get(cax,'YLim');
-ptsPerXUnit = pos(3)/diff(xlims);
-ptsPerYUnit = pos(4)/diff(ylims);
+[xfunc, yfunc] = getCoordFunctions(cax);
 for i=1:numel(xs)
     cPatchArgs = baseArgs;
     for j=1:2:numel(perPointArgs)
@@ -188,19 +189,44 @@ for i=1:numel(xs)
     else
         cColor = colors;
     end
-    hh(end+1) = patch( cSize * sin(patchSpec) / ptsPerXUnit + xs(i), cSize * cos(patchSpec) / ptsPerYUnit + ys(i), cColor, cPatchArgs{:});
+    hh(end+1) = patch( xfunc(xs(i), cSize * sin(patchSpec)), ...
+                       yfunc(ys(i), cSize * cos(patchSpec)), cColor, cPatchArgs{:});
 end
 
 set(cax,'Units',cUnits);
-
-callBackFcn = @(varargin) updatePatches(cax,hh,xs,ys,sizes,patchSpec);
+existingResizeFnc = get(get(cax,'Parent'), 'ResizeFcn');
+callBackFcn = @(varargin) updatePatches(cax,hh,xs,ys,sizes,patchSpec, existingResizeFnc);
 hl = addlistener(handle(cax),{'XLim','YLim','Position','DataAspectRatio'},'PostSet',callBackFcn);
 set(get(cax,'Parent'),'ResizeFcn',callBackFcn);
-
 set(cax,'UserData', {get(cax,'UserData') hl});
+callBackFcn();  % update sizes
 
 
-function updatePatches(cax, patchObjects, xs, ys, sizes, patchSpec)
+function [xfunc, yfunc] = getCoordFunctions(cax)
+    pos = get(cax,'Position');
+    xlims = xlim(cax);
+    if strcmp(get(cax,'XScale'), 'log')
+        xlims = log(xlims);
+    end
+    ylims = ylim(cax);
+    if strcmp(get(cax,'YScale'), 'log')
+        ylims = log(ylims);
+    end
+    ptsPerXUnit = pos(3)/diff(xlims);
+    ptsPerYUnit = pos(4)/diff(ylims);
+    if strcmp(get(cax,'XScale'), 'log')
+        xfunc = @(center, offset) center * exp(offset / ptsPerXUnit);
+    else
+        xfunc = @(center, offset) center + offset / ptsPerXUnit;
+    end
+    if strcmp(get(cax,'YScale'), 'log')
+        yfunc = @(center, offset) center * exp(offset / ptsPerYUnit);
+    else
+        yfunc = @(center, offset) center + offset / ptsPerYUnit;
+    end
+
+
+function updatePatches(cax, patchObjects, xs, ys, sizes, patchSpec, existingResizeFnc)
     if ~ishandle(patchObjects(1))
         % already deleted
         return
@@ -208,18 +234,17 @@ function updatePatches(cax, patchObjects, xs, ys, sizes, patchSpec)
     cUnits = get(cax,'Units');
     set(cax,'Units','points');
     pos = get(cax,'Position');
-    xlims = get(cax,'XLim');
-    ylims = get(cax,'YLim');
-    ptsPerXUnit = pos(3)/diff(xlims);
-    ptsPerYUnit = pos(4)/diff(ylims);
+    [xfunc, yfunc] = getCoordFunctions(cax);
     for i=1:numel(xs)
         if length(sizes) > 1
             cSize = sizes(i);
         else
             cSize = sizes;
         end
-        set(patchObjects(i), 'XData', cSize * sin(patchSpec) / ptsPerXUnit + xs(i));
-        set(patchObjects(i), 'YData', cSize * cos(patchSpec) / ptsPerYUnit + ys(i));
+        set(patchObjects(i), 'XData', xfunc(xs(i), cSize * sin(patchSpec)));
+        set(patchObjects(i), 'YData', yfunc(ys(i), cSize * cos(patchSpec)));
     end
 
     set(cax,'Units',cUnits);
+
+    existingResizeFnc();
