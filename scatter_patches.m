@@ -50,7 +50,13 @@ function hh = scatter_patches(varargin)
 %      hh3=scatter_patches(randn(N,1),4 + 1*randn(N,1),100*rand(N,1), 1:N,'<','FaceAlpha',0.2,'EdgeColor','r');
 %      legend([hh1(1),hh2(1),hh3(1)], {'red circles','multicolor squares','multicolor triangles'});
 %
-% Artemy Kolchinsky, Indiana University, 2014
+%
+%   Log scaling can be implemented by passing in an appropriate axis object:
+%      figure; cax=gca; set(cax, 'YScale', 'log', 'XScale', 'log');
+%      scatter_patches(cax, rand(100,1),rand(100,1),'r','FaceAlpha',0.3,'EdgeColor','none');
+%
+%
+% Artemy Kolchinsky, Indiana University and Santa Fe Institute, 2014-2016
 
 
 args = varargin;
